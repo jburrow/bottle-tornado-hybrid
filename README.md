@@ -38,9 +38,7 @@ def bottle_hello():
 def bottle_test_websocket():
     return """<script>
 var ws = new WebSocket('ws://localhost:8080/tornado-ws')
-ws.onmessage = (msg)=>console.debug(msg);
-ws.onopen = (msg)=>{console.debug(msg);ws.send('Hello Hybrid');}
-
+ws.onopen = (msg)=>{ws.send('Hello Hybrid');}
     </script>
     """
 
@@ -70,11 +68,7 @@ class TornadoServerWithHandlers(bottle.ServerAdapter):
         import tornado.ioloop
 
         wsgi_app = tornado.wsgi.WSGIContainer(bottle_app)
-
-        options = self.options.get("options") or {}
-        tornado_handler_routes = options.get("tornado_handler_routes") or []
-
-        tornado_handler_routes = list(tornado_handler_routes)
+        tornado_handler_routes = list(self.options.get("tornado_handler_routes") or [])
         tornado_handler_routes.append(
             (".*", tornado.web.FallbackHandler, dict(fallback=wsgi_app))
         )
@@ -94,6 +88,8 @@ if __name__ == "__main__":
         host="localhost",
         port=8080,
         server=TornadoServerWithHandlers,
-        options=dict(tornado_handler_routes=tornado_handler_routes),
+        tornado_handler_routes=tornado_handler_routes,
     )
+
+
 ```
